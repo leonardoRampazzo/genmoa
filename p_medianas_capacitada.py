@@ -6,11 +6,12 @@ import random
 def pop_random(values):
     return values.pop(random.randrange(len(values)))
 
+
 class PriorityQueueIndividuo:
     def __init__(self, elements=[]):
-        self.elements = [] 
+        self.elements = []
         for element in elements:
-            self.put(element)              
+            self.put(element)
 
     def empty(self):
         return len(self.elements) == 0
@@ -91,16 +92,24 @@ class Individuo:
     def __init__(self, medianas=[]):
         self.medianas = medianas
         self.__aptidao = -1
-        
-    def fitness(self):        
+
+    def fitness(self):
         if self.__aptidao < 0:
             for mediana in self.medianas:
-                self.__aptidao += mediana.distancia_total
+                self.__aptidao += mediana.distancia_total()
 
         return self.__aptidao
-    
+
     def __cmp__(self, other):
-        return ((self.fitness() > other.fitness()) - (self.fitness() < other.fitness()))         
+        return ((self.fitness() > other.fitness()) - (self.fitness() < other.fitness()))
+
+    def __str__(self):
+        return "Invididuo({}, {})".format(str(medianas), str(self.fitness()))
+
+    def __repr__(self):
+        return self.__str__()
+
+
 class Populacao:
     def __init__(self, individuos=[]):
         self.individuos = PriorityQueueIndividuo(individuos)
@@ -135,15 +144,15 @@ class AlgoritmoGenetico:
         return self.geracao > self.maximo_geracoes
 
     def gerar_populacao_inicial(self, numero_medianas):
-        invididuos = []                
-        for i in range(self.tamanho_populacao):                    
+        invididuos = []
+        for i in range(self.tamanho_populacao):
             medianas = []
             vertices = self.vertices
             for j in range(numero_medianas):
                 mediana = Mediana(pop_random(vertices))
-                v = pop_random(vertices)                
+                v = pop_random(vertices)
                 while (vertices
-                            and mediana.capacidade(v)):
+                       and mediana.capacidade(v)):
                     if mediana.vertice != v:
                         mediana.adicionar_vertice(v)
                     v = pop_random(vertices)
