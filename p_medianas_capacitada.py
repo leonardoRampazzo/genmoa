@@ -115,7 +115,7 @@ class Populacao:
         self.individuos = PriorityQueueIndividuo(individuos)
 
     def __str__(self):
-        return "População({})".format(str(self.individuos.elements))
+        return "População({})".format(self.individuos.size())
 
     def __repr__(self):
         return self.__str__()
@@ -226,19 +226,15 @@ if (__name__ == "__main__"):
     vertices = []
 
     while linhas:                
-        x, y, capacidade, demanda = linhas.pop(0).split()
-        vertice = Vertice((x, y), capacidade, demanda)
-        vertices.append(vertice)
+        x, y, capacidade, demanda = linhas.pop(0).split()        
+        vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
 
-    tamanho_populacao = 1
+    tamanho_populacao = 2
     quantidade_torneio = 100
     maximo_geracoes = 1000
     pcross_over = 0.98
     pmutacao = 0.05
-
-    print(vertices)
-
-
+    
     ag = AlgoritmoGenetico(
         vertices,
         tamanho_populacao,
