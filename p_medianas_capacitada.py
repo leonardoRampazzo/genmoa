@@ -1,4 +1,26 @@
 import math
+import heapq
+import random
+
+class PriorityQueue:
+    def __init__(self):
+        self.elements = []
+    
+    def empty(self):
+        return len(self.elements) == 0
+    
+    def put(self, item, priority):
+        heapq.heappush(self.elements, (priority, item))
+    
+    def get(self):
+        return heapq.heappop(self.elements)[1]
+
+    def peak(self, n):
+        return heapq.nsmallest(n, self.elements)   
+
+    def size(self):
+        return len(self.elements)
+
 
 class Vertice:
     def __init__(self, coordenada, capacidade, demanda):        
@@ -49,13 +71,46 @@ class Individuo:
         for mediana in self.medianas:
             aptidao += mediana.distancia_total
 
-        return aptidao
+        return aptidao    
+
+class Populacao: 
+    def __init__(self, individuos = []):        
+        self.individuos = PriorityQueue
+        for individuo in individuos:
+            self.individuos.put(individuo)    
+
+    def melhor(self):
+        return self.individuos.peak(1)
+
+    def tamanho(self):
+        return self.individuos.size()
+
+    def melhores(self, n):
+        return self.individuos.peak(n)
+
+
+class Selecao:
+    def executarTorneio(populacao, quantidade):
+        qtde_populacao = populacao.tamanho()
+        qtde_participantes = qtde_populacao        
+        if (qtde_populacao > quantidade):           
+            qtde_participantes = (quantidade + random.randrange(qtde_populacao - quantidade))        
+                               
+        
+        participantes = populacao.melhores(qtde_participantes);
+        
+        Comparator<Individuo> c = new Individuo();
+        Arrays.sort(participantes, c);
+        
+        System.arraycopy(participantes, 0, vencedores, 0, quantidade);        
+        return vencedores;
+    }
+}
 
 class AlgoritmoGenetico:
-    def __init__(self, vertices):
-        self.medianas = set([])
+    def __init__(self, vertices):        
         self.vertices = vertices
-        self.valor_solucao = 0
+        self.geracao = 0        
 
     def gerar_nova_mediana(self, vertice, mediana):
         novo_conjunto = mediana.conjunto.discard(vertice)
@@ -71,16 +126,40 @@ class AlgoritmoGenetico:
         return nova_mediana
     
     def gerar_populacao_inicial(self):
-        pass
+        return Populacao()
 
-    def solucao_melhor(self, valor):
-        return valor < self.valor_solucao
-
+    def parar(self):
+        return True
+    
     def solucionar(self):
-        self.gerar_populacao_inicial()
-        pass
-                
+        self.geracao = 0;                
+        melhor_solucao = Individuo()
+        populacao = self.gerar_populacao_inicial()                                                        
+        melhor = populacao.melhor()                    
+        while (not self.parar()):
+            self.geracao += 1
+            vencedores = []
+            filhos = []
+            
+            vencedores = selecionador.executarTorneio(populacao, Util.QUANTIDADE_INDIVIDUOS_TORNEIO);            
+            filhos = cruzamento.executar(vencedores, melhor != populacao.getIndividuo(0));
+            filhos = mutacao.executar(filhos);                        
+            populacao.atualizar(filhos);       
+            if (this.tipoBuscaLocal == 1)
+                populacao.setIndividuo(0, buscaLocal.firstFit(populacao.getIndividuo(0)));                                                          
+            if (melhor != populacao.getIndividuo(0)){
+                if (this.tipoBuscaLocal == 2)                
+                    populacao.setIndividuo(0, buscaLocal.hillClimbing(populacao.getIndividuo(0)));           
+                melhor = populacao.getIndividuo(0);
+                this.printMelhorInvidivuo(populacao);
+                this.repeticaoMelhor = 0;                
+            } 
+            else repeticaoMelhor++;            
+        }
 
+        this.printMelhorInvidivuo(populacao);
+        return melhor;        
+                
 if (__name__ == "__main__"):
     m1 = Mediana(Vertice((1, 1), 120, 1))
     m1.adicionar_vertice(Vertice((2, 2), 120, 15))
