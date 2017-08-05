@@ -105,6 +105,12 @@ class Populacao:
     def __init__(self, individuos=[]):
         self.individuos = PriorityQueueIndividuo(individuos)
 
+    def __str__(self):
+        return "População({})".format(str(self.individuos.elements))
+
+    def __repr__(self):
+        return self.__str__()
+
     def melhor(self):
         return self.individuos.peak(1)
 
@@ -129,13 +135,12 @@ class AlgoritmoGenetico:
         return self.geracao > self.maximo_geracoes
 
     def gerar_populacao_inicial(self, numero_medianas):
-        invididuos = []        
-        size_vertices = len(self.vertices)
+        invididuos = []                
         for i in range(self.tamanho_populacao):                    
             medianas = []
-            vertices = self.vertices[:]                    
+            vertices = self.vertices
             for j in range(numero_medianas):
-                mediana = Mediana(pop_random(vertices))                
+                mediana = Mediana(pop_random(vertices))
                 v = pop_random(vertices)                
                 while (vertices
                             and mediana.capacidade(v)):
@@ -180,8 +185,10 @@ class AlgoritmoGenetico:
             return False
 
         self.geracao = 0
+        print("População inicial")
         populacao = self.gerar_populacao_inicial(numero_medianas)
         print("População inicial", populacao)
+        print("População inicial")
         melhor = populacao.melhor()
         while not self.parar():
             self.geracao += 1
@@ -223,7 +230,7 @@ if (__name__ == "__main__"):
         Vertice((1, 4), 120, 2),
         Vertice((4, 1), 120, 8),
     ]
-    tamanho_populacao = 2
+    tamanho_populacao = 1
     quantidade_torneio = 100
     maximo_geracoes = 1000
     pcross_over = 0.98
