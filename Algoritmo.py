@@ -14,46 +14,88 @@ numTentativas = 0
 solucaoBetter = True
 
 class Vertice:
-    def __init__(self,cordenadaX, cordenadaY, capacidade, demanda):
-      self.capacidade = capacidade
-      self.demanda    = demanda
-      self.cordenadaX = cordenadaX
-      self.cordenadaY = cordenadaY
+    def __init__(self, coordenada, capacidade, demanda):        
+        self.coordenada = coordenada
+        self.demanda = demanda
+        self.capacidade = capacidade
 
-class Solucao:
-    caminho = []
-    aptidao = -1
+class Mediana:
+    def __init__(self, vertice):
+        self.vertice = vertice        
+        self.conjunto = set([])
+        self.__distancias = {}                
+        self.__demanda = 0
+        self.__distancia_total = 0
 
-    def __lt__(self, other):
-        return self.custo() < other.custo()
+    def adicionar_vertice(self, v):
+        self.conjunto.add(v)
+        self.__demanda += v.demanda
+        self.__distancia_total += self.distancia(self.vertice, v)
 
-    def custo(self):
-        global verticelist
-        if (self.aptidao == -1):
-            soma = 0
-            for i in range(tamConjunto - 1):
-                v1 = verticelist[self.caminho[i] - 1]
-                v2 = verticelist[self.caminho[i + 1] - 1]
-                soma += math.sqrt(((v1.cordenadaX - v2.cordenadaX) ** 2) +
-                                  ((v1.cordenadaY - v2.cordenadaY) ** 2))
-            v1 = verticelist[self.caminho[0] - 1]
-            v2 = verticelist[self.caminho[tamConjunto - 1] -1]
-            soma += math.sqrt(((v1.cordenadaX - v2.cordenadaX) ** 2) +
-                              ((v1.cordenadaY - v2.cordenadaY) ** 2))
-            self.aptidao = soma
-        return self.aptidao
+    def capacidade(self, v1):                
+        return self.vertice.capacidade >= (self.demanda_atual() + v1.demanda)
 
-#BLOCO DEFINIÇÃO DAS FUNÇOES
-def geraPopulacao():
-    global populacao
-    
-    for i in range(tamPopulacao):
-        solucao = Solucao()
-        solucao.caminho = passosSeq[:]
-        random.shuffle(solucao.caminho)
-        heapq.heappush(populacao, solucao)
+    def demanda_atual(self):
+        return self.__demanda
+
+    def distancia(self, v1, v2):
+        aresta = (v1, v2)
+        if not aresta in self.__distancias:
+            xa, ya = v1.coordenada
+            xb, yb = v2.coordenada
+            self.__distancias[aresta] = math.sqrt(math.pow((xa - xb), 2) + math.pow((ya - yb), 2))        
+        return self.__distancias[aresta]
+
+    def somar_distancia(self):                
+        return self.__distancia_total       
         
-    return populacao
+    def cardinalidade(self):
+        return len(self.conjunto)
+
+class Individuo:
+    def __init__(self, medianas = []):
+        self.medianas = medianas        
+
+    def fitness(self):        
+        aptidao = 0
+        for mediana in self.medianas:
+            aptidao += mediana.distancia_total
+
+        return aptidao
+
+    def get_medianas(self):
+        return self.medianas
+
+def geraPopulacao(verticelist):
+    global populacao
+
+    individuo = Individuo()
+    
+    for i in range(tamPopulacao): 
+        medianaList = []
+        for j in range(numero_de_medianas):
+            mediana = Mediana(verticelist[random.randrange(len(verticelist))])
+            v = verticelist[random.randrange(len(verticelist))]
+            while mediana.capacidade(v): 
+                if(not mediana.capacidade(v)):
+                    break
+                mediana.adicionar_vertice(v)
+            medianaList.append(mediana)
+        individuo = Individuo(medianaList)
+
+    list_medianas = individuo.get_medianas()
+
+    for i in list_medianas:
+        print(i.cardinalidade)
+   
+    
+    # for i in range(tamPopulacao):
+    #     solucao = Solucao()
+    #     solucao.caminho = passosSeq[:]
+    #     random.shuffle(solucao.caminho)
+    #     heapq.heappush(populacao, solucao)
+        
+    # return populacao
     
 def selectRota(pPopulacao):
     vRandom1 = random.randrange(tamPopulacao//2)
@@ -147,28 +189,35 @@ if __name__ == "__main__":
     primeiralinha = input()
     primeiralinha = primeiralinha.split()
 
+    random.seed()
+
     numero_de_pontos   = int(primeiralinha[0])
     numero_de_medianas = int(primeiralinha[1])
 
     entrada = []
+    verticelist = []
+
     for i in range(numero_de_pontos):
         a = input()
         entrada.append(a)
 
     for i in range(numero_de_pontos):
         vList = entrada[i].split()
-        vertice = Vertice(float(vList[0]), float(vList[1]), int(vList[2]), int(vList[3]))
+        vertice = Vertice((float(vList[0]), float(vList[1])), int(vList[2]), int(vList[3]))
         verticelist.append(vertice)
 
-    populacao = geraPopulacao()
+    populacao = geraPopulacao(verticelist)
  
-#BLOCO PROGRAMA PRINCIPAL
-while (solucaoBetter):
-    #Avaliação e Seleção
-    solucaoA = selectRota(populacao)
-    solucaoB = selectRota(populacao)
-    #Cruzamento
-    listaCruzamento = geraCruzamento(solucaoA, solucaoB)
-    #Atualização - Elitismo
-    populacao = atualizaPopulacao(populacao, listaCruzamento)
-print(obtemMenor(populacao))
+
+
+ 
+    # while (solucaoBetter):
+ 
+    #     solucaoA = selectRota(populacao)
+    #     solucaoB = selectRota(populacao)
+ 
+    #     listaCruzamento = geraCruzamento(solucaoA, solucaoB)
+ 
+    #     populacao = atualizaPopulacao(populacao, listaCruzamento)
+
+    #print(obtemMenor(populacao))
