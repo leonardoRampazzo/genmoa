@@ -88,36 +88,34 @@ class Individuo:
 
 
 def geraPopulacao(verticelist):
-    global populacao
+    populacao = []
 
-    individuo = Individuo()
+    for j in range(tamPopulacao):
+        lista_medianas = []
 
-    individuoList = []
-    for i in range(tamPopulacao):
-        medianaList = []
-        for j in range(numero_de_medianas):
-            mediana = Mediana(verticelist[random.randrange(len(verticelist))])
-            v = verticelist[random.randrange(len(verticelist))]
-            while mediana.capacidade(v):
-                mediana.adicionar_vertice(v)
-            medianaList.append(mediana)
-            pprint(medianaList)
-        individuoList.append(Individuo(medianaList))
+        if(verticelist):
+            for i in range(numero_medianas):
+                vertice = verticelist.pop(random.randrange(len(verticelist)))
+                mediana = Mediana(vertice)
+                lista_medianas.append(mediana)
 
-    list_medianas = individuo.get_medianas()
+        indice = 0
+        i = 0
+        while(verticelist and lista_medianas):
+            v = verticelist.pop(random.randrange(len(verticelist)))
 
-#    for i in list_medianas:
-#        print(i)
-#        print(len(i.conjunto))
+            if(lista_medianas[indice].capacidade(v)):
+                lista_medianas[indice].adicionar_vertice(v)
+            else:
+                lista_medianas[indice].pop()
 
-    # for i in range(tamPopulacao):
-    #     solucao = Solucao()
-    #     solucao.caminho = passosSeq[:]
-    #     random.shuffle(solucao.caminho)
-    #     heapq.heappush(populacao, solucao)
-
-    # return populacao
-
+            i += 1
+            indice = (i % len(lista_medianas))
+        
+        individuo = Individuo(lista_medianas)
+        populacao.append(individuo)
+    
+    return populacao
 
 def selectRota(pPopulacao):
     vRandom1 = random.randrange(tamPopulacao // 2)
@@ -214,40 +212,44 @@ def atualizaPopulacao(pPopulacao, pListaCruzamento):
 def obtemMenor(pPopulacao):
     return pPopulacao[0].custo()
 
-
-if __name__ == "__main__":
-    primeiralinha = input()
-    primeiralinha = primeiralinha.split()
-
-    random.seed()
+if (__name__ == "__main__"):        
+    random.seed()    
+    linhas = open('teste', 'r').readlines()        
+    primeiralinha = linhas.pop(0).split()
+    
+    
     numero_de_pontos = int(primeiralinha[0])
-    numero_de_medianas = int(primeiralinha[1])
-    print("Numero Medianas", numero_de_medianas)
+    numero_medianas = int(primeiralinha[1])        
+    vertices = []
 
-    entrada = []
-    verticelist = []
+    while linhas:                
+        x, y, capacidade, demanda = linhas.pop(0).split()        
+        vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
 
-    for i in range(numero_de_pontos):
-        a = input()
-        entrada.append(a)
+    populacao = geraPopulacao(vertices)
 
-    for i in range(numero_de_pontos):
-        vList = entrada[i].split()
-        coordenada = (float(vList[0]), float(vList[1]))
-        capacidade = int(vList[2])
-        demanda = int(vList[3])        
-        vertice = Vertice(coordenada, capacidade, demanda)
-        verticelist.append(vertice)
+    print(populacao)
 
-    populacao = geraPopulacao(verticelist)
 
-    # while (solucaoBetter):
 
-    #     solucaoA = selectRota(populacao)
-    #     solucaoB = selectRota(populacao)
+    # Parte para enviar
+    # primeiralinha = input()
+    # primeiralinha = primeiralinha.split()
 
-    #     listaCruzamento = geraCruzamento(solucaoA, solucaoB)
+    # random.seed()
 
-    #     populacao = atualizaPopulacao(populacao, listaCruzamento)
+    # numero_de_pontos   = int(primeiralinha[0])
+    # numero_de_medianas = int(primeiralinha[1])
 
-    # print(obtemMenor(populacao))
+    # entrada = []
+    # verticelist = []
+
+    # for i in range(numero_de_pontos):
+    #     a = input()
+    #     entrada.append(a)
+
+    # for i in range(numero_de_pontos):
+    #     vList = entrada[i].split()
+    #     vertice = Vertice((float(vList[0]), float(vList[1])), int(vList[2]), int(vList[3]))
+    #     verticelist.append(vertice)
+
