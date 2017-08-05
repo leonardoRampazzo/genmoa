@@ -3,8 +3,8 @@ import heapq
 import random
 
 class PriorityQueue:
-    def __init__(self):
-        self.elements = []
+    def __init__(self, elements = []):
+        self.elements = elements
     
     def empty(self):
         return len(self.elements) == 0
@@ -88,77 +88,64 @@ class Populacao:
     def melhores(self, n):
         return self.individuos.peak(n)
 
-
-class Selecao:
-    def executarTorneio(populacao, quantidade):
-        qtde_populacao = populacao.tamanho()
-        qtde_participantes = qtde_populacao        
-        if (qtde_populacao > quantidade):           
-            qtde_participantes = (quantidade + random.randrange(qtde_populacao - quantidade))        
-                               
-        
-        participantes = populacao.melhores(qtde_participantes);
-        
-        Comparator<Individuo> c = new Individuo();
-        Arrays.sort(participantes, c);
-        
-        System.arraycopy(participantes, 0, vencedores, 0, quantidade);        
-        return vencedores;
-    }
-}
-
 class AlgoritmoGenetico:
-    def __init__(self, vertices):        
+    def __init__(self, vertices, quantidade_torneio, maximo_geracoes, pcross_over, pmutacao):        
         self.vertices = vertices
-        self.geracao = 0        
+        self.geracao = 0                
+        self.quantidade_torneio = quantidade_torneio
+        self.maximo_geracoes = maximo_geracoes
+        self.pcross_over = pcross_over
+        self.pmutacao = pmutacao
 
-    def gerar_nova_mediana(self, vertice, mediana):
-        novo_conjunto = mediana.conjunto.discard(vertice)
-        novo_conjunto.add(mediana.vertice)
-
-        nova_mediana = Mediana(vertice)        
-        for v in novo_conjunto:
-            if not nova_mediana.capacidade(v):
-                return None
-
-            nova_mediana.adicionar_vertice(v)                            
-
-        return nova_mediana
-    
+    def parar(self):        
+        return self.geracao > self.maximo_geracoes        
+       
     def gerar_populacao_inicial(self):
         return Populacao()
+        
+    def executar_torneio(self, populacao):
+        return populacao.melhores(self.quantidade_torneio)
 
-    def parar(self):
-        return True
+    def crossover(self, pai1, pai2):
+        pass
+    
+    def mutacao(self, individuo):
+        pass
+    
+    def reproduzir(self, selecionados):
+        filhos = []
+        size_selecionados = len(selecionados)
+        for i in range(0, size_selecionados):
+            p1 = selecionados[i]            
+            if i == size_selecionados - 1:
+                p2 = selecionados[0] 
+            else:
+                p2 = selecionados[i+1] if (i % 2 == 0) else selected[i-1]            
+
+            filho = crossover(p1, p2)
+            filho = mutacao(filho)
+
+            filhos.append(filho)                                                
+            if len(filhos) >= self.quantidade_torneio:            
+                break 
+        
+        return filhos
     
     def solucionar(self):
-        self.geracao = 0;                
-        melhor_solucao = Individuo()
-        populacao = self.gerar_populacao_inicial()                                                        
-        melhor = populacao.melhor()                    
-        while (not self.parar()):
+        queue = PriorityQueue
+        populacao = self.gerar_populacao_inicial()                                                                
+        melhor = populacao.melhor()
+        while not self.parar():
             self.geracao += 1
-            vencedores = []
-            filhos = []
-            
-            vencedores = selecionador.executarTorneio(populacao, Util.QUANTIDADE_INDIVIDUOS_TORNEIO);            
-            filhos = cruzamento.executar(vencedores, melhor != populacao.getIndividuo(0));
-            filhos = mutacao.executar(filhos);                        
-            populacao.atualizar(filhos);       
-            if (this.tipoBuscaLocal == 1)
-                populacao.setIndividuo(0, buscaLocal.firstFit(populacao.getIndividuo(0)));                                                          
-            if (melhor != populacao.getIndividuo(0)){
-                if (this.tipoBuscaLocal == 2)                
-                    populacao.setIndividuo(0, buscaLocal.hillClimbing(populacao.getIndividuo(0)));           
-                melhor = populacao.getIndividuo(0);
-                this.printMelhorInvidivuo(populacao);
-                this.repeticaoMelhor = 0;                
-            } 
-            else repeticaoMelhor++;            
-        }
+            selecionados = executar_torneio(populacao)            
+            filhos = self.reproduzir(selecionados)                        
 
-        this.printMelhorInvidivuo(populacao);
-        return melhor;        
+
+            queue = PriorityQueue(self, filhos)    
+            melhor_filho = queue.get()
+            if melhor.fitness() < melhor_filho.fitness():                
+                melhor = populacao.melhor()
+            populacao = Populacao(selecionados)        
                 
 if (__name__ == "__main__"):
     m1 = Mediana(Vertice((1, 1), 120, 1))
