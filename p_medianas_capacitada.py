@@ -9,7 +9,7 @@ def pop_random(values):
 class PriorityQueueIndividuo:
     def __init__(self, elements=[]):
         self.elements = [] 
-        if len(elements) < 0:            
+        if len(elements) > 0:            
               heapq.heapify(elements)
 
     def empty(self):
