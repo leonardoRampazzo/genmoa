@@ -104,7 +104,7 @@ class Individuo:
         return ((self.fitness() > other.fitness()) - (self.fitness() < other.fitness()))
 
     def __str__(self):
-        return "Invididuo({}, {})".format(str(medianas), str(self.fitness()))
+        return "Invididuo({}, {})".format(str(self.medianas), str(self.fitness()))
 
     def __repr__(self):
         return self.__str__()
@@ -213,38 +213,37 @@ class AlgoritmoGenetico:
             populacao = Populacao(selecionados)
 
 
+
+
 if (__name__ == "__main__"):
-    m1 = Mediana(Vertice((1, 1), 120, 1))
-    m1.adicionar_vertice(Vertice((2, 2), 120, 15))
-    m1.adicionar_vertice(Vertice((3, 3), 120, 7))
+    random.seed()
+    primeiralinha = input()
+    primeiralinha = primeiralinha.split()
+    
+    numero_de_pontos = int(primeiralinha[0])
+    numero_medianas = int(primeiralinha[1])
+    print("Numero Medianas", numero_medianas)
 
-    m2 = Mediana(Vertice((4, 4), 120, 15))
-    m2.adicionar_vertice(Vertice((1, 4), 120, 2))
-    m2.adicionar_vertice(Vertice((4, 1), 120, 8))
+    entrada = []
+    vertices = []
 
-    print(m1.vertice.coordenada)
-    print(m1.distancia_total())
-    print(m1.demanda_atual())
-    print(m2.vertice.coordenada)
-    print(m2.distancia_total())
-    print(m2.demanda_atual())
+    for i in range(numero_de_pontos):
+        a = input()
+        entrada.append(a)
 
-    medianas = [m1, m2]
+    for i in range(numero_de_pontos):
+        vList = entrada[i].split()
+        coordenada = (float(vList[0]), float(vList[1]))
+        capacidade = int(vList[2])
+        demanda = int(vList[3])        
+        vertice = Vertice(coordenada, capacidade, demanda)
+        vertices.append(vertice)
 
-    vertices = [
-        Vertice((1, 1), 120, 1),
-        Vertice((2, 2), 120, 15),
-        Vertice((3, 3), 120, 7),
-        Vertice((4, 4), 120, 15),
-        Vertice((1, 4), 120, 2),
-        Vertice((4, 1), 120, 8),
-    ]
     tamanho_populacao = 1
     quantidade_torneio = 100
     maximo_geracoes = 1000
     pcross_over = 0.98
     pmutacao = 0.05
-    numero_medianas = 1
 
     ag = AlgoritmoGenetico(
         vertices,
