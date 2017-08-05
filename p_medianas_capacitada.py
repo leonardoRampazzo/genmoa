@@ -100,6 +100,12 @@ class Individuo:
 
         return self.__aptidao
 
+    def __lt__(self, other):
+        return (self.fitness() < other.fitness())
+
+    def __le__(self, other):
+        return (self.fitness() > other.fitness())
+
     def __cmp__(self, other):
         return ((self.fitness() > other.fitness()) - (self.fitness() < other.fitness()))
 
@@ -229,7 +235,7 @@ if (__name__ == "__main__"):
         x, y, capacidade, demanda = linhas.pop(0).split()        
         vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
 
-    tamanho_populacao = 2
+    tamanho_populacao = 4
     quantidade_torneio = 100
     maximo_geracoes = 1000
     pcross_over = 0.98
