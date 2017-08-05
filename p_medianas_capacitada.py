@@ -1,7 +1,7 @@
 import math
 
 class Vertice:
-    def __init__(self, coordenada, demanda, capacidade):        
+    def __init__(self, coordenada, capacidade, demanda):        
         self.coordenada = coordenada
         self.demanda = demanda
         self.capacidade = capacidade
@@ -20,7 +20,10 @@ class Mediana:
         self.__distancia_total += self.distancia(self.vertice, v)
 
     def capacidade(self, v1):                
-        return self.vertice.capacidade >= (self.__demanda + v1.demanda)
+        return self.vertice.capacidade >= (self.demanda_atual + v1.demanda)
+
+    def demanda_atual(self):
+        return self.__demanda
 
     def distancia(self, v1, v2):
         aresta = (v1, v2)
@@ -51,10 +54,6 @@ class AlgoritmoGenetico:
     def solucionar(self):
         pass
 
-
-
-
-
 if (__name__ == "__main__"):
     m1 = Mediana(Vertice((1, 1), 120, 1))
     m1.adicionar_vertice(Vertice((2, 2), 120, 15))
@@ -67,8 +66,10 @@ if (__name__ == "__main__"):
             
     print(m1.vertice.coordenada)
     print(m1.somar_distancia())
+    print(m1.demanda_atual())
     print(m2.vertice.coordenada)
     print(m2.somar_distancia())
+    print(m2.demanda_atual())
 
     medianas = [m1, m2]
 
