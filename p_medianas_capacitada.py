@@ -215,28 +215,19 @@ class AlgoritmoGenetico:
 
 
 
-if (__name__ == "__main__"):
-    random.seed()
-    primeiralinha = input()
-    primeiralinha = primeiralinha.split()
+if (__name__ == "__main__"):        
+    random.seed()    
+    linhas = open('teste', 'r').readlines()        
+    primeiralinha = linhas.pop(0).split()
+    
     
     numero_de_pontos = int(primeiralinha[0])
-    numero_medianas = int(primeiralinha[1])
-    print("Numero Medianas", numero_medianas)
-
-    entrada = []
+    numero_medianas = int(primeiralinha[1])        
     vertices = []
 
-    for i in range(numero_de_pontos):
-        a = input()
-        entrada.append(a)
-
-    for i in range(numero_de_pontos):
-        vList = entrada[i].split()
-        coordenada = (float(vList[0]), float(vList[1]))
-        capacidade = int(vList[2])
-        demanda = int(vList[3])        
-        vertice = Vertice(coordenada, capacidade, demanda)
+    while linhas:                
+        x, y, capacidade, demanda = linhas.pop(0).split()
+        vertice = Vertice((x, y), capacidade, demanda)
         vertices.append(vertice)
 
     tamanho_populacao = 1
@@ -244,6 +235,9 @@ if (__name__ == "__main__"):
     maximo_geracoes = 1000
     pcross_over = 0.98
     pmutacao = 0.05
+
+    print(vertices)
+
 
     ag = AlgoritmoGenetico(
         vertices,
@@ -255,11 +249,3 @@ if (__name__ == "__main__"):
     )
 
     print(ag.solucionar(numero_medianas))
-
-    """
-    for v1 in g.vertices:
-        print(v1.coordenada)
-        for v2 in g.vertices:
-            print(v2.coordenada)
-            print(g.distancia(v1, v2))
-    """
