@@ -334,66 +334,67 @@ class AlgoritmoGenetico:
             filhos = self.reproduzir(selecionados)                        
             queue = PriorityQueueIndividuo(filhos)            
             melhor_filho = queue.get()            
-            if self.utilizar_busca_local:
-                print("Busca local ", melhor_filho)
+            if self.utilizar_busca_local:                
                 melhor_filho = self.busca_local(melhor_filho)            
-                print("Busca local realizada", melhor_filho)
+
             if melhor_filho.fitness() < melhor.fitness():
                 melhor = melhor_filho
+
             populacao = Populacao(selecionados + filhos)                    
 
         return melhor
 
-if (__name__ == "__main__"):                
-    linhas = open('teste', 'r').readlines()        
-    primeiralinha = linhas.pop(0).split()
+if (__name__ == "__main__"):                    
+    # linhas = open('teste', 'r').readlines()        
+    # primeiralinha = linhas.pop(0).split()
         
-    numero_pontos = int(primeiralinha[0])
-    numero_medianas = int(primeiralinha[1])        
-    vertices = []
-
-    while linhas:                        
-        x, y, capacidade, demanda = linhas.pop(0).split()        
-        vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))    
-
-    random.seed(10)    
-
-    # Parte para enviar
-    # primeiralinha = input()
-    # primeiralinha = primeiralinha.split()
-
-    # random.seed()
-
-    # numero_pontos   = int(primeiralinha[0])
-    # numero_medianas = int(primeiralinha[1])
-
-    # entrada = []
+    # numero_pontos = int(primeiralinha[0])
+    # numero_medianas = int(primeiralinha[1])        
     # vertices = []
 
-    # for i in range(numero_pontos):
-    #     a = input()
-    #     entrada.append(a)
-
-    # for i in range(numero_pontos):
-    #     vList = entrada[i].split()
-    #     vertice = Vertice((float(vList[0]), float(vList[1])), int(vList[2]), int(vList[3]))
-    #     vertices.append(vertice)            
+    # while linhas:                        
+    #     x, y, capacidade, demanda = linhas.pop(0).split()        
+    #     vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))    
     
-    tamanho_populacao = 100
-    quantidade_torneio = 60
-    maximo_geracoes = 50
-    pcross_over = 0.98
+    # Parte para enviar
+    primeiralinha = input()
+    primeiralinha = primeiralinha.split()
+
+    random.seed()
+
+    numero_pontos   = int(primeiralinha[0])
+    numero_medianas = int(primeiralinha[1])
+
+    entrada = []
+    vertices = []
+
+    for i in range(numero_pontos):
+        a = input()
+        entrada.append(a)
+
+    for i in range(numero_pontos):
+        vList = entrada[i].split()
+        vertice = Vertice((float(vList[0]), float(vList[1])), int(vList[2]), int(vList[3]))
+        vertices.append(vertice)            
+    
+    # random.seed(10)        
+    tamanho_populacao = 10
+    quantidade_torneio = 6
+    maximo_geracoes = 1000
+    pcross_over = 0.
     pmutacao = 0.10
+    utilizar_busca_local = False
+    limite_tempo = 10
 
     ag = AlgoritmoGenetico(        
         vertices,
         tamanho_populacao,
-        quantidade_torneio,
+        quantidade_torneio,98
         maximo_geracoes,
         pcross_over,
         pmutacao,
-        True,
-        10
+        utilizar_busca_local,
+        limite_tempo
     )
         
     print(ag.solucionar(numero_medianas).fitness())
