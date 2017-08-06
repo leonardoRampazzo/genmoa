@@ -1,9 +1,9 @@
 import math
 import heapq
 import random
+from copy import deepcopy
 from pprint import pprint
 DEBUG = False
-
 
 def pop_random(values):
     return values.pop(random.randrange(len(values)))
@@ -96,7 +96,7 @@ class Mediana:
 
 class Individuo:
     def __init__(self, medianas=[]):
-        self.medianas = medianas        
+        self.medianas = medianas
 
     def fitness(self):        
         aptidao = 0
@@ -138,7 +138,6 @@ class Populacao:
 
     def melhores(self, n):
         return self.individuos.peak(n)
-
 
 class AlgoritmoGenetico:
     def __init__    (self, vertices, tamanho_populacao,
@@ -201,6 +200,8 @@ class AlgoritmoGenetico:
         return Individuo(medianas)
                 
     def crossover(self, pai, mae):
+        pai = deepcopy(pai)
+        mae = deepcopy(mae)
         numero_medianas = len(pai.medianas)
 
         if (random.random() < self.pcross_over):              
@@ -292,45 +293,8 @@ class AlgoritmoGenetico:
             pprint(populacao.individuos.elements)
         return melhor
 
-
-    def gerar_individuo(self, vertices, medianas):
-        for v in self.vertices:
-            if v not in medianas:
-                melhor_mediana = None
-                melhor_distancia = 9999999
-                for mediana in medianas:
-                    distancia = distancia_euclidianea(v.coordenada, mediana.vertice.coordenada)
-                    if ((distancia < melhor_distancia)
-                            and mediana.capacidade(v)):
-                        melhor_distancia = distancia
-                        melhor_mediana = mediana
-
-                if melhor_mediana != None:
-                    melhor_mediana.conjunto.add(v)
-
-        return Individuo(medianas)
-
-def gerar_individuo(vertices, medianas):
-    for v in vertices:
-        if v not in medianas:
-            melhor_mediana = None
-            melhor_distancia = 9999999
-            for mediana in medianas:
-                distancia = distancia_euclidianea(v.coordenada, mediana.vertice.coordenada)
-                if ((distancia < melhor_distancia)
-                        and mediana.capacidade(v)):
-                    melhor_distancia = distancia
-                    melhor_mediana = mediana
-
-            if melhor_mediana != None:
-                melhor_mediana.conjunto.add(v)
-
-    return Individuo(medianas)
-
-
-
 if (__name__ == "__main__"):            
-    linhas = open('teste', 'r').readlines()        
+    linhas = open('teste2', 'r').readlines()        
     primeiralinha = linhas.pop(0).split()
         
     numero_de_pontos = int(primeiralinha[0])
@@ -342,18 +306,12 @@ if (__name__ == "__main__"):
         vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
 
     random.seed(10)    
-    tamanho_populacao = 100
-    quantidade_torneio = 100
+    tamanho_populacao = 10
+    quantidade_torneio = 9
     maximo_geracoes = 1000
-    pcross_over = 0.98
-    pmutacao = 0.30
+    pcross_over = 0.90
+    pmutacao = 0.5
 
-    medianas = [Mediana(vertices[i]) for i in range(10)]
-    i = gerar_individuo(vertices, medianas)
-    print(i)
-    print(i.medianas[0].distancia_total())
-    print (i.fitness())
-    
     ag = AlgoritmoGenetico(
         vertices,
         tamanho_populacao,
