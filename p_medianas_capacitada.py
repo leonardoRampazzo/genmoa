@@ -1,8 +1,8 @@
 import math
 import heapq
 import random
+import time
 from copy import deepcopy
-from pprint import pprint
 DEBUG = False
 
 
@@ -152,16 +152,20 @@ class Populacao:
 
 class AlgoritmoGenetico:
     def __init__(self, vertices, tamanho_populacao,
-                 quantidade_torneio, maximo_geracoes, pcross_over, pmutacao):
+                 quantidade_torneio, maximo_geracoes, 
+                 pcross_over, pmutacao, limite_tempo):
         self.tamanho_populacao = tamanho_populacao
         self.vertices = vertices
         self.quantidade_torneio = quantidade_torneio
         self.maximo_geracoes = maximo_geracoes
         self.pcross_over = pcross_over
         self.pmutacao = pmutacao
+        self.limite_tempo = limite_tempo
 
     def parar(self):
-        return self.geracao > self.maximo_geracoes
+        self.tempo_atual = time.time()        
+        return ((self.geracao > self.maximo_geracoes)
+                    or ((self.tempo_atual - self.inicio)  > self.limite_tempo))
 
     def gerar_populacao_inicial(self, numero_medianas):
         invididuos = []
@@ -290,66 +294,65 @@ class AlgoritmoGenetico:
         return filhos
 
     def solucionar(self, numero_medianas):
+        self.inicio = time.time()
+        self.geracao = 0    
         if len(self.vertices) <= 0:
             return False
-
-        self.geracao = 0    
-        populacao = self.gerar_populacao_inicial(numero_medianas)        
-        if DEBUG:        
-            print("População inicial", populacao)        
-            pprint(populacao.individuos.elements)
-
-        melhor = populacao.melhor()
-        print("Melhor inicial", melhor)
+        
+        populacao = self.gerar_populacao_inicial(numero_medianas)            
+        melhor = populacao.melhor()        
         while not self.parar():
-            self.geracao += 1
-            if DEBUG:
-                print("População ")
-                pprint(populacao.individuos.elements)
-            selecionados = self.executar_torneio(populacao)            
-            if DEBUG: 
-                print("Selecionados ")
-                pprint(selecionados)
-            
-            filhos = self.reproduzir(selecionados)            
-            if DEBUG:
-                print("Filhos")
-                pprint(filhos)                            
-
+            self.geracao += 1            
+            selecionados = self.executar_torneio(populacao)                                
+            filhos = self.reproduzir(selecionados)                        
             queue = PriorityQueueIndividuo(filhos)            
-            melhor_filho = queue.get()
-            if DEBUG:
-                print("Melhor filho ", melhor_filho)            
-            
+            melhor_filho = queue.get()            
             if melhor_filho.fitness() < melhor.fitness():
                 melhor = melhor_filho
-            
-            print("Melhor ", melhor)
-            populacao = Populacao(selecionados + filhos)
-            
-        if DEBUG:
-            print("População final", populacao)        
-            pprint(populacao.individuos.elements)
+            populacao = Populacao(selecionados + filhos)                    
+
         return melhor
 
-if (__name__ == "__main__"):            
-    linhas = open('teste2', 'r').readlines()        
-    primeiralinha = linhas.pop(0).split()
+if (__name__ == "__main__"):                
+    # linhas = open('teste', 'r').readlines()        
+    # primeiralinha = linhas.pop(0).split()
         
-    numero_de_pontos = int(primeiralinha[0])
-    numero_medianas = int(primeiralinha[1])        
+    # numero_pontos = int(primeiralinha[0])
+    # numero_medianas = int(primeiralinha[1])        
+    # vertices = []
+
+    # while linhas:                        
+    #     x, y, capacidade, demanda = linhas.pop(0).split()        
+    #     vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))    
+
+    #random.seed(10)    
+
+    # Parte para enviar
+    primeiralinha = input()
+    primeiralinha = primeiralinha.split()
+
+    random.seed()
+
+    numero_pontos   = int(primeiralinha[0])
+    numero_medianas = int(primeiralinha[1])
+
+    entrada = []
     vertices = []
 
-    while linhas:                        
-        x, y, capacidade, demanda = linhas.pop(0).split()        
-        vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
+    for i in range(numero_pontos):
+        a = input()
+        entrada.append(a)
 
-    random.seed(10)    
-    tamanho_populacao = 10
-    quantidade_torneio = 9
-    maximo_geracoes = 1000
-    pcross_over = 0.90
-    pmutacao = 0.5
+    for i in range(numero_pontos):
+        vList = entrada[i].split()
+        vertice = Vertice((float(vList[0]), float(vList[1])), int(vList[2]), int(vList[3]))
+        vertices.append(vertice)            
+    
+    tamanho_populacao = 100
+    quantidade_torneio = 60
+    maximo_geracoes = 50
+    pcross_over = 0.98
+    pmutacao = 0.10
 
     ag = AlgoritmoGenetico(
         vertices,
@@ -357,8 +360,9 @@ if (__name__ == "__main__"):
         quantidade_torneio,
         maximo_geracoes,
         pcross_over,
-        pmutacao
+        pmutacao,
+        30
     )
         
-    print("Melhor solução AG: ", ag.solucionar(numero_medianas))
+    print(ag.solucionar(numero_medianas).fitness())
 
