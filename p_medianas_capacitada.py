@@ -210,16 +210,16 @@ class AlgoritmoGenetico:
             return (medianas_filho_1, medianas_filho_2)
         return (pai.medianas, mae.medianas)
 
-    def mutacao(self, medianas):
-        # if (random.random() < self.pmutacao):
-        #     nova_mediana = Mediana(get_random(self.vertices))
-        #     while (nova_mediana in medianas):
-        #         nova_mediana = Mediana(get_random(self.vertices))            
-            
-        #     medianas_mutacao = medianas            
-        #     pop_random(medianas)
-        #     medianas_mutacao.append(nova_mediana)                                                
-        #     return medianas_mutacao
+    def mutacao(self, medianas):    
+        if (random.random() < self.pmutacao):
+             medianas_mutacao = medianas[:]
+             nova_mediana = Mediana(get_random(self.vertices))
+             while (nova_mediana in medianas_mutacao):
+                 nova_mediana = Mediana(get_random(self.vertices))            
+                         
+             pop_random(medianas_mutacao)
+             medianas_mutacao.append(nova_mediana)                                                
+             return medianas_mutacao
 
         return medianas
 
@@ -254,22 +254,27 @@ class AlgoritmoGenetico:
             return False
 
         self.geracao = 0    
-        populacao = self.gerar_populacao_inicial(numero_medianas)
-        if DEBUG:
+        populacao = self.gerar_populacao_inicial(numero_medianas)        
+        if DEBUG:        
             print("População inicial", populacao)        
+            pprint(populacao.individuos.elements)
+
         melhor = populacao.melhor()
         print("Melhor inicial", melhor)
         while not self.parar():
             self.geracao += 1
-            print("População ")
-            pprint(populacao.individuos.elements)
+            if DEBUG:
+                print("População ")
+                pprint(populacao.individuos.elements)
             selecionados = self.executar_torneio(populacao)            
-            print("Selecionados ")
-            pprint(selecionados)
+            if DEBUG:
+                print("Selecionados ")
+                pprint(selecionados)
             
             filhos = self.reproduzir(selecionados)            
-            print("Filhos")
-            pprint(filhos)                            
+            if DEBUG:
+                print("Filhos")
+                pprint(filhos)                            
 
             queue = PriorityQueueIndividuo(filhos)            
             melhor_filho = queue.get()
@@ -284,10 +289,47 @@ class AlgoritmoGenetico:
             
         if DEBUG:
             print("População final", populacao)        
+            pprint(populacao.individuos.elements)
         return melhor
-            
-if (__name__ == "__main__"):        
-    random.seed(10)    
+
+
+    def gerar_individuo(self, vertices, medianas):
+        for v in self.vertices:
+            if v not in medianas:
+                melhor_mediana = None
+                melhor_distancia = 9999999
+                for mediana in medianas:
+                    distancia = distancia_euclidianea(v.coordenada, mediana.vertice.coordenada)
+                    if ((distancia < melhor_distancia)
+                            and mediana.capacidade(v)):
+                        melhor_distancia = distancia
+                        melhor_mediana = mediana
+
+                if melhor_mediana != None:
+                    melhor_mediana.conjunto.add(v)
+
+        return Individuo(medianas)
+
+def gerar_individuo(vertices, medianas):
+    for v in vertices:
+        if v not in medianas:
+            melhor_mediana = None
+            melhor_distancia = 9999999
+            for mediana in medianas:
+                distancia = distancia_euclidianea(v.coordenada, mediana.vertice.coordenada)
+                if ((distancia < melhor_distancia)
+                        and mediana.capacidade(v)):
+                    melhor_distancia = distancia
+                    melhor_mediana = mediana
+
+            if melhor_mediana != None:
+                melhor_mediana.conjunto.add(v)
+
+    return Individuo(medianas)
+
+
+
+if (__name__ == "__main__"):            
     linhas = open('teste', 'r').readlines()        
     primeiralinha = linhas.pop(0).split()
         
@@ -299,11 +341,18 @@ if (__name__ == "__main__"):
         x, y, capacidade, demanda = linhas.pop(0).split()        
         vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
 
-    tamanho_populacao = 20
-    quantidade_torneio = 10
+    random.seed(10)    
+    tamanho_populacao = 100
+    quantidade_torneio = 100
     maximo_geracoes = 1000
     pcross_over = 0.98
-    pmutacao = 0.05
+    pmutacao = 0.30
+
+    medianas = [Mediana(vertices[i]) for i in range(10)]
+    i = gerar_individuo(vertices, medianas)
+    print(i)
+    print(i.medianas[0].distancia_total())
+    print (i.fitness())
     
     ag = AlgoritmoGenetico(
         vertices,
@@ -315,3 +364,4 @@ if (__name__ == "__main__"):
     )
         
     print("Melhor solução AG: ", ag.solucionar(numero_medianas))
+
