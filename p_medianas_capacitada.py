@@ -1,7 +1,7 @@
 import math
 import heapq
 import random
-
+from pprint import pprint
 DEBUG = False
 
 
@@ -10,6 +10,11 @@ def pop_random(values):
 
 def get_random(values):
     return values[random.randrange(len(values))]
+
+def distancia_euclidianea(p1, p2):    
+    xa, ya = p1
+    xb, yb = p2
+    return math.sqrt(math.pow((xa - xb), 2) + math.pow((ya - yb), 2))
 
 class PriorityQueueIndividuo:
     def __init__(self, elements=[]):
@@ -81,11 +86,8 @@ class Mediana:
 
     def distancia(self, v1, v2):
         aresta = (v1, v2)
-        if not aresta in self.__distancias:
-            xa, ya = v1.coordenada
-            xb, yb = v2.coordenada
-            self.__distancias[aresta] = math.sqrt(
-                math.pow((xa - xb), 2) + math.pow((ya - yb), 2))
+        if not aresta in self.__distancias:        
+            self.__distancias[aresta] = distancia_euclidianea(v1.coordenada, v2.coordenada)
         return self.__distancias[aresta]
 
     def distancia_total(self):
@@ -94,15 +96,13 @@ class Mediana:
 
 class Individuo:
     def __init__(self, medianas=[]):
-        self.medianas = medianas
-        self.__aptidao = -1
+        self.medianas = medianas        
 
-    def fitness(self):
-        if self.__aptidao < 0:
-            for mediana in self.medianas:
-                self.__aptidao += mediana.distancia_total()
-
-        return self.__aptidao
+    def fitness(self):        
+        aptidao = 0
+        for mediana in self.medianas:
+            aptidao += mediana.distancia_total()
+        return aptidao
 
     def __lt__(self, other):
         return (self.fitness() < other.fitness())
@@ -180,42 +180,70 @@ class AlgoritmoGenetico:
             invididuos.append(individuo)                    
         return Populacao(invididuos)
 
-    def executar_torneio(self, populacao):
+    def executar_torneio(self, populacao):        
         return populacao.melhores(self.quantidade_torneio)
     
-    def recalcular_vertices(self, individuo):
-        return 
-    def crossover(self, pai_1, pai_2):
-        return (pai_1, pai_2)
+    def gerar_individuo(self, medianas):
+        for v in self.vertices:
+            if v not in medianas:
+                melhor_mediana = None
+                melhor_distancia = 9999999
+                for mediana in medianas:
+                    distancia = distancia_euclidianea(v.coordenada, mediana.vertice.coordenada)
+                    if ((distancia < melhor_distancia)
+                            and mediana.capacidade(v)):
+                        melhor_distancia = distancia
+                        melhor_mediana = mediana
 
-    def mutacao(self, individuo):
-        individuo_mutado = individuo
-        if (pmutacao * random.randrange(100) > 1):
-            nova_mediana = Mediana(get_random(self.vertices))
-            while (nova_mediana in (individuo.medianas)):
-                nova_mediana = Mediana(get_random(self.vertices))
+                if melhor_mediana != None:
+                    melhor_mediana.conjunto.add(v)
 
-            pop_random(individuo.medianas)
-            individuo.medianas.append(nova_mediana)            
-        return individuo_mutado
+        return Individuo(medianas)
+                
+    def crossover(self, pai, mae):
+        numero_medianas = len(pai.medianas)
+
+        if (random.random() < self.pcross_over):              
+            medianas_filho_1 = pai.medianas[:numero_medianas//2] + mae.medianas[numero_medianas//2:]
+            medianas_filho_2 = mae.medianas[:numero_medianas//2] + pai.medianas[numero_medianas//2:]
+
+            return (medianas_filho_1, medianas_filho_2)
+        return (pai.medianas, mae.medianas)
+
+    def mutacao(self, medianas):
+        # if (random.random() < self.pmutacao):
+        #     nova_mediana = Mediana(get_random(self.vertices))
+        #     while (nova_mediana in medianas):
+        #         nova_mediana = Mediana(get_random(self.vertices))            
+            
+        #     medianas_mutacao = medianas            
+        #     pop_random(medianas)
+        #     medianas_mutacao.append(nova_mediana)                                                
+        #     return medianas_mutacao
+
+        return medianas
 
     def reproduzir(self, selecionados):
         filhos = []
         size_selecionados = len(selecionados)
         for i in range(0, size_selecionados):
-            p1 = selecionados[i]
+            pai = selecionados[i]
             if i == size_selecionados - 1:
-                p2 = selecionados[0]
+                mae = selecionados[0]
             else:
-                p2 = selecionados[i + 1] if (i %
+                mae = selecionados[i + 1] if (i %
                                              2 == 0) else selecionados[i - 1]
+            
+            medianas_filho_1, medianas_filho_2 = self.crossover(pai, mae)
+            medianas_filho_1 = self.mutacao(medianas_filho_1)
+            medianas_filho_2 = self.mutacao(medianas_filho_2)
+                        
+            individuo_1 = self.gerar_individuo(medianas_filho_1)
+            individuo_2 = self.gerar_individuo(medianas_filho_2)
 
-            filho_1, filho_2 = self.crossover(p1, p2)
-            filho_1 = self.mutacao(filho_1)
-            filho_2 = self.mutacao(filho_2)
+            filhos.append(individuo_1)
+            filhos.append(individuo_2)
 
-            filhos.append(filho_1)
-            filhos.append(filho_2)
             if len(filhos) >= self.tamanho_populacao:
                 break
 
@@ -230,32 +258,36 @@ class AlgoritmoGenetico:
         if DEBUG:
             print("População inicial", populacao)        
         melhor = populacao.melhor()
+        print("Melhor inicial", melhor)
         while not self.parar():
             self.geracao += 1
-            selecionados = self.executar_torneio(populacao)
-            if DEBUG:
-                print("Selecionados ", selecionados)
-            filhos = self.reproduzir(selecionados)
-            if DEBUG:
-                print("Filhos ", filhos)
-            queue = PriorityQueueIndividuo(filhos)
+            print("População ")
+            pprint(populacao.individuos.elements)
+            selecionados = self.executar_torneio(populacao)            
+            print("Selecionados ")
+            pprint(selecionados)
+            
+            filhos = self.reproduzir(selecionados)            
+            print("Filhos")
+            pprint(filhos)                            
+
+            queue = PriorityQueueIndividuo(filhos)            
             melhor_filho = queue.get()
             if DEBUG:
                 print("Melhor filho ", melhor_filho)            
-            if melhor.fitness() < melhor_filho.fitness():
-                melhor = populacao.melhor()
-
-            if DEBUG:
-                print("Melhor ", melhor)
-
-            populacao = Populacao(selecionados)
+            
+            if melhor_filho.fitness() < melhor.fitness():
+                melhor = melhor_filho
+            
+            print("Melhor ", melhor)
+            populacao = Populacao(selecionados + filhos)
             
         if DEBUG:
             print("População final", populacao)        
         return melhor
             
 if (__name__ == "__main__"):        
-    random.seed()    
+    random.seed(10)    
     linhas = open('teste', 'r').readlines()        
     primeiralinha = linhas.pop(0).split()
         
@@ -267,8 +299,8 @@ if (__name__ == "__main__"):
         x, y, capacidade, demanda = linhas.pop(0).split()        
         vertices.append(Vertice((int(x), int(y)), int(capacidade), int(demanda)))
 
-    tamanho_populacao = 4
-    quantidade_torneio = 4
+    tamanho_populacao = 20
+    quantidade_torneio = 10
     maximo_geracoes = 1000
     pcross_over = 0.98
     pmutacao = 0.05
