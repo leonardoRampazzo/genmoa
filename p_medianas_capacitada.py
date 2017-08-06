@@ -5,16 +5,20 @@ from copy import deepcopy
 from pprint import pprint
 DEBUG = False
 
+
 def pop_random(values):
     return values.pop(random.randrange(len(values)))
+
 
 def get_random(values):
     return values[random.randrange(len(values))]
 
-def distancia_euclidianea(p1, p2):    
+
+def distancia_euclidianea(p1, p2):
     xa, ya = p1
     xb, yb = p2
     return math.sqrt(math.pow((xa - xb), 2) + math.pow((ya - yb), 2))
+
 
 class PriorityQueueIndividuo:
     def __init__(self, elements=[]):
@@ -73,6 +77,11 @@ class Mediana:
     def __repr__(self):
         return self.__str__()
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.vertice == other.vertice
+        return False
+
     def adicionar_vertice(self, v):
         self.conjunto.add(v)
         self.__demanda += v.demanda
@@ -86,8 +95,9 @@ class Mediana:
 
     def distancia(self, v1, v2):
         aresta = (v1, v2)
-        if not aresta in self.__distancias:        
-            self.__distancias[aresta] = distancia_euclidianea(v1.coordenada, v2.coordenada)
+        if not aresta in self.__distancias:
+            self.__distancias[aresta] = distancia_euclidianea(
+                v1.coordenada, v2.coordenada)
         return self.__distancias[aresta]
 
     def distancia_total(self):
@@ -98,7 +108,7 @@ class Individuo:
     def __init__(self, medianas=[]):
         self.medianas = medianas
 
-    def fitness(self):        
+    def fitness(self):
         aptidao = 0
         for mediana in self.medianas:
             aptidao += mediana.distancia_total()
@@ -139,8 +149,9 @@ class Populacao:
     def melhores(self, n):
         return self.individuos.peak(n)
 
+
 class AlgoritmoGenetico:
-    def __init__    (self, vertices, tamanho_populacao,
+    def __init__(self, vertices, tamanho_populacao,
                  quantidade_torneio, maximo_geracoes, pcross_over, pmutacao):
         self.tamanho_populacao = tamanho_populacao
         self.vertices = vertices
@@ -170,25 +181,26 @@ class AlgoritmoGenetico:
                 v = vertices.pop(random.randrange(len(vertices)))
 
                 if(lista_medianas[indice].capacidade(v)):
-                    lista_medianas[indice].adicionar_vertice(v)           
+                    lista_medianas[indice].adicionar_vertice(v)
 
                 i += 1
                 indice = (i % len(lista_medianas))
-            
+
             individuo = Individuo(lista_medianas)
-            invididuos.append(individuo)                    
+            invididuos.append(individuo)
         return Populacao(invididuos)
 
-    def executar_torneio(self, populacao):        
+    def executar_torneio(self, populacao):
         return populacao.melhores(self.quantidade_torneio)
-    
+
     def gerar_individuo(self, medianas):
         for v in self.vertices:
             if v not in medianas:
                 melhor_mediana = None
                 melhor_distancia = 9999999
                 for mediana in medianas:
-                    distancia = distancia_euclidianea(v.coordenada, mediana.vertice.coordenada)
+                    distancia = distancia_euclidianea(
+                        v.coordenada, mediana.vertice.coordenada)
                     if ((distancia < melhor_distancia)
                             and mediana.capacidade(v)):
                         melhor_distancia = distancia
@@ -198,29 +210,56 @@ class AlgoritmoGenetico:
                     melhor_mediana.conjunto.add(v)
 
         return Individuo(medianas)
-                
+
     def crossover(self, pai, mae):
         pai = deepcopy(pai)
         mae = deepcopy(mae)
         numero_medianas = len(pai.medianas)
 
-        if (random.random() < self.pcross_over):              
-            medianas_filho_1 = pai.medianas[:numero_medianas//2] + mae.medianas[numero_medianas//2:]
-            medianas_filho_2 = mae.medianas[:numero_medianas//2] + pai.medianas[numero_medianas//2:]
+        if (random.random() < self.pcross_over):            
+            medianas_filho_1 = []
+            medianas_filho_2 = []
+
+            i = 0
+            while(pai.medianas):
+                m = pai.medianas.pop()
+            
+                if i == 0:
+                    medianas_filho_1.append(m)
+                else: 
+                    medianas_filho_2.append(m)                        
+                
+                i = ((i + 1) % 2)
+
+            i = 0
+            while(mae.medianas):
+                m = mae.medianas.pop()
+                while m != None:
+                    if (i == 0 
+                            and (m not in medianas_filho_1)
+                            and (len(medianas_filho_1) < 15)):
+                        medianas_filho_1.append(m)
+                        m = None
+                    elif (m not in medianas_filho_2
+                            and (len(medianas_filho_2) < 15)):
+                        medianas_filho_2.append(m)
+                        m = None
+                
+                i = ((i + 1) % 2)
 
             return (medianas_filho_1, medianas_filho_2)
         return (pai.medianas, mae.medianas)
 
-    def mutacao(self, medianas):    
+    def mutacao(self, medianas):
         if (random.random() < self.pmutacao):
-             medianas_mutacao = medianas[:]
-             nova_mediana = Mediana(get_random(self.vertices))
-             while (nova_mediana in medianas_mutacao):
-                 nova_mediana = Mediana(get_random(self.vertices))            
-                         
-             pop_random(medianas_mutacao)
-             medianas_mutacao.append(nova_mediana)                                                
-             return medianas_mutacao
+            medianas_mutacao = medianas[:]
+            nova_mediana = Mediana(get_random(self.vertices))
+            while (nova_mediana in medianas_mutacao):
+                nova_mediana = Mediana(get_random(self.vertices))
+            
+            pop_random(medianas_mutacao)
+            medianas_mutacao.append(nova_mediana)                                                
+            return medianas_mutacao
 
         return medianas
 
@@ -268,7 +307,7 @@ class AlgoritmoGenetico:
                 print("População ")
                 pprint(populacao.individuos.elements)
             selecionados = self.executar_torneio(populacao)            
-            if DEBUG:
+            if DEBUG: 
                 print("Selecionados ")
                 pprint(selecionados)
             
